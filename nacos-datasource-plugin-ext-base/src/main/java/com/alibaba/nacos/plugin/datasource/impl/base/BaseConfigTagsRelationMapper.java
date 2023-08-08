@@ -63,10 +63,9 @@ public class BaseConfigTagsRelationMapper extends ConfigTagsRelationMapperByMySq
         final String[] tagArr = (String[]) context.getWhereParameter(FieldConstant.TAG_ARR);
 
 
-
         List<Object> paramList = new ArrayList<>();
         StringBuilder where = new StringBuilder(" WHERE ");
-        final String sql =
+        String sql =
                 "SELECT a.id,a.data_id,a.group_id,a.tenant_id,a.app_name,a.content FROM config_info  a LEFT JOIN "
                         + "config_tags_relation b ON a.id=b.id";
 
@@ -99,9 +98,8 @@ public class BaseConfigTagsRelationMapper extends ConfigTagsRelationMapperByMySq
         }
         where.append(") ");
 
-        // TODO
-        return new MapperResult(sql + where + " LIMIT " + context.getStartRow() + "," + context.getPageSize(),
-                paramList);
+        sql = getLimitPageSqlWithOffset(sql + where, context.getStartRow(), context.getPageSize());
+        return new MapperResult(sql, paramList);
 
     }
 
@@ -117,7 +115,7 @@ public class BaseConfigTagsRelationMapper extends ConfigTagsRelationMapperByMySq
         List<Object> paramList = new ArrayList<>();
 
         StringBuilder where = new StringBuilder(" WHERE ");
-        final String sqlFetchRows = "SELECT a.id,a.data_id,a.group_id,a.tenant_id,a.app_name,a.content "
+        String sqlFetchRows = "SELECT a.id,a.data_id,a.group_id,a.tenant_id,a.app_name,a.content "
                 + "FROM config_info a LEFT JOIN config_tags_relation b ON a.id=b.id ";
 
         where.append(" a.tenant_id LIKE ? ");
@@ -148,8 +146,10 @@ public class BaseConfigTagsRelationMapper extends ConfigTagsRelationMapperByMySq
             paramList.add(tagArr[i]);
         }
         where.append(") ");
-        return new MapperResult(sqlFetchRows + where + " LIMIT " + context.getStartRow() + "," + context.getPageSize(),
-                paramList);
+
+        sqlFetchRows = getLimitPageSqlWithOffset(sqlFetchRows + where, context.getStartRow(), context.getPageSize());
+
+        return new MapperResult(sqlFetchRows, paramList);
     }
 
 }

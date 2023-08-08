@@ -47,6 +47,7 @@ public class BaseConfigInfoTagMapper extends ConfigInfoTagMapperByMySql {
     public MapperResult findAllConfigInfoTagForDumpAllFetchRows(MapperContext context) {
         String innerSql = databaseDialect.getLimitPageSqlWithOffset("SELECT id FROM config_info_tag  ORDER BY id ",
                 context.getStartRow(), context.getPageSize());
+
         String sql = new StringBuilder()
                 .append(" SELECT t.id,data_id,group_id,tenant_id,tag_id,app_name,content,md5,gmt_modified ")
                 .append(" FROM (  ")
@@ -56,7 +57,6 @@ public class BaseConfigInfoTagMapper extends ConfigInfoTagMapperByMySql {
                 .toString();
 
         return new MapperResult(sql, Collections.emptyList());
-
     }
 
 }

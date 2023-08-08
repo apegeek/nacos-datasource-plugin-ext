@@ -22,7 +22,7 @@ IDEA导入时导入nacos-datasource-plugin-ext这个目录作为根目录即可�
 
 ### 2.1 插件引入
 
-**方式一：源码方式**
+#### 2.1.1 源码方式引入
 
 使用postgresql作为依赖引入到Nacos主分支源码中，使用Maven提前将当前工程Install到Maven仓库，然后在pom.xml中引入如下依赖：
 
@@ -36,20 +36,26 @@ IDEA导入时导入nacos-datasource-plugin-ext这个目录作为根目录即可�
 
 或引入all模块。
 
-**方式二：打包形式引入**
+#### 2.1.3 打包形式引入
 
 在Nacos2.2.2的发布包环境下，下载当前插件项目源码，打包为jar包，将该文件放到nacos主目录下的plugins文件夹中，默认会使用Nacos的loader.path机制指定该插件的路径，打包插件可选择nacos-postgresql-datasource-plugin-ext打包即可。postgresql模块的打包默认会包含postgresql的jdbc驱动类和base依赖。
 
 ### 2.2 修改数据库配置
 
-在application.properties文件中声明postgresql的配置信息：
+在application.yml文件中声明postgresql的配置信息：
 
-```java
-spring.datasource.platform=postgresql
-db.url.0=jdbc:postgresql://127.0.0.1:5432/nacos?tcpKeepAlive=true&reWriteBatchedInserts=true&ApplicationName=nacos_java
-db.user=nacos
-db.password=nacos
-db.pool.config.driverClassName=org.postgresql.Driver
+```yaml
+spring:
+  datasource:
+    platform: postgresql
+db:
+  url:
+    0: jdbc:postgresql://127.0.0.1:5432/nacos?tcpKeepAlive=true&reWriteBatchedInserts=true&ApplicationName=nacos_java
+  user: nacos
+  password: nacos
+  pool:
+    config:
+      driverClassName: org.postgresql.Driver
 ```
 
 ### 2.3 导入Postgresql的数据库脚本文件

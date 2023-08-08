@@ -40,8 +40,8 @@ public class BaseGroupCapacityMapper extends GroupCapacityMapperByMysql {
     @Override
     public MapperResult selectGroupInfoBySize(MapperContext context) {
         String sql = databaseDialect.getLimitTopSqlWithMark("SELECT id, group_id FROM group_capacity WHERE id > ?");
-        return new MapperResult(sql, CollectionUtils.list(context.getWhereParameter(FieldConstant.ID), context.getPageSize()));
 
+        return new MapperResult(sql, CollectionUtils.list(context.getWhereParameter(FieldConstant.ID), context.getPageSize()));
     }
 
 }

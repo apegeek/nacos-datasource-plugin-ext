@@ -24,5 +24,4 @@ import com.alibaba.nacos.plugin.datasource.impl.mysql.TenantInfoMapperByMySql;
  * @author Long Yu
  **/
 public class BaseTenantInfoMapper extends TenantInfoMapperByMySql {
-
 }

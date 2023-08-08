@@ -39,8 +39,8 @@ public class BaseTenantCapacityMapper extends TenantCapacityMapperByMySql {
 
     @Override
     public MapperResult getCapacityList4CorrectUsage(MapperContext context) {
-        String sql = "SELECT id, tenant_id FROM tenant_capacity WHERE id>?";
-        sql = databaseDialect.getLimitTopSqlWithMark(sql);
+        String sql = databaseDialect.getLimitTopSqlWithMark("SELECT id, tenant_id FROM tenant_capacity WHERE id>?");
+
         return new MapperResult(sql, CollectionUtils.list(context.getWhereParameter(FieldConstant.ID),
                 context.getWhereParameter(FieldConstant.LIMIT_SIZE)));
     }

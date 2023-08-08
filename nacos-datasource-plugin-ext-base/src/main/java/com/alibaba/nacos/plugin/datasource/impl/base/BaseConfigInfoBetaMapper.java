@@ -17,6 +17,7 @@
 package com.alibaba.nacos.plugin.datasource.impl.base;
 
 
+import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.alibaba.nacos.plugin.datasource.constants.TableConstant;
 import com.alibaba.nacos.plugin.datasource.dialect.DatabaseDialect;
 import com.alibaba.nacos.plugin.datasource.impl.mysql.ConfigInfoBetaMapperByMySql;
@@ -54,13 +55,17 @@ public class BaseConfigInfoBetaMapper extends ConfigInfoBetaMapperByMySql {
 
         int startRow = context.getStartRow();
         int pageSize = context.getPageSize();
-        String sql = " SELECT t.id,data_id,group_id,tenant_id,app_name,content,md5,gmt_modified,beta_ips,encrypted_data_key "
-                + " FROM ( SELECT id FROM config_info_beta  ORDER BY id LIMIT " + startRow + "," + pageSize + " )"
-                + "  g, config_info_beta t WHERE g.id = t.id ";
-        List<Object> paramList = new ArrayList<>();
-        paramList.add(startRow);
-        paramList.add(pageSize);
 
+        String sqlInner = getLimitPageSqlWithOffset("SELECT id FROM config_info_beta  ORDER BY id ",startRow, pageSize);
+        String sql = new StringBuilder()
+                .append(" SELECT t.id,data_id,group_id,tenant_id,app_name,content,md5,gmt_modified,beta_ips,encrypted_data_key ")
+                .append(" FROM ( ")
+                .append(sqlInner)
+                .append("  )")
+                .append("  g, config_info_beta t WHERE g.id = t.id ")
+                .toString();
+
+        List<Object> paramList = CollectionUtils.list();
         return new MapperResult(sql, paramList);
     }
 

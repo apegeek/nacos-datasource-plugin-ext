@@ -69,43 +69,36 @@ public class BaseConfigInfoMapper extends ConfigInfoMapperByMySql {
 
         final String appName = (String) context.getWhereParameter(FieldConstant.APP_NAME);
         final String tenantId = (String) context.getWhereParameter(FieldConstant.TENANT_ID);
-        String sql = "SELECT id,data_id,group_id,tenant_id,app_name,content FROM config_info"
-                + " WHERE tenant_id LIKE ? AND app_name= ?" + " LIMIT " + context.getStartRow() + ","
-                + context.getPageSize();
+
+        String sql = getLimitPageSqlWithOffset("SELECT id,data_id,group_id,tenant_id,app_name,content FROM config_info"
+                + " WHERE tenant_id LIKE ? AND app_name= ?", context.getStartRow(), context.getPageSize());
+
         return new MapperResult(sql, CollectionUtils.list(tenantId, appName));
     }
 
     @Override
     public MapperResult getTenantIdList(MapperContext context) {
+        String sql = getLimitPageSqlWithOffset("SELECT tenant_id FROM config_info WHERE tenant_id != '' GROUP BY tenant_id ", context.getStartRow(), context.getPageSize());
 
-        String sql = new StringBuilder()
-                .append("SELECT tenant_id FROM config_info WHERE tenant_id != '")
-                .append(NamespaceUtil.getNamespaceDefaultId())
-                .append("' GROUP BY tenant_id LIMIT ")
-                .append(context.getStartRow())
-                .append(",")
-                .append(context.getPageSize())
-                .toString();
         return new MapperResult(sql, Collections.emptyList());
     }
 
     @Override
     public MapperResult getGroupIdList(MapperContext context) {
-        String sql = new StringBuilder()
-                .append("SELECT group_id FROM config_info WHERE tenant_id ='")
-                .append(NamespaceUtil.getNamespaceDefaultId())
-                .append("' GROUP BY group_id LIMIT ")
-                .append(context.getStartRow())
-                .append(",")
-                .append(context.getPageSize())
-                .toString();
-        return new MapperResult(sql, Collections.emptyList());    }
+        String sql = getLimitPageSqlWithOffset("SELECT group_id FROM config_info WHERE tenant_id ='' GROUP BY group_id ", context.getStartRow(), context.getPageSize());
+
+        return new MapperResult(sql, Collections.emptyList());
+    }
 
     @Override
     public MapperResult findAllConfigKey(MapperContext context) {
-        String sql = " SELECT data_id,group_id,app_name  FROM ( "
-                + " SELECT id FROM config_info WHERE tenant_id LIKE ? ORDER BY id LIMIT " + context.getStartRow() + ","
-                + context.getPageSize() + " )" + " g, config_info t WHERE g.id = t.id  ";
+        String innerSql = getLimitPageSqlWithOffset(" SELECT id FROM config_info WHERE tenant_id LIKE ? ORDER BY id ", context.getStartRow(), context.getPageSize());
+        String sql = new StringBuilder()
+                .append(" SELECT data_id,group_id,app_name  FROM ( ")
+                .append(innerSql)
+                .append(" g, config_info t WHERE g.id = t.id  ")
+                .toString();
+
         return new MapperResult(sql, CollectionUtils.list(context.getWhereParameter(FieldConstant.TENANT_ID)));
     }
 
@@ -114,17 +107,21 @@ public class BaseConfigInfoMapper extends ConfigInfoMapperByMySql {
         String appName = (String) context.getWhereParameter(FieldConstant.APP_NAME);
         final String tenantId = (String) context.getWhereParameter(FieldConstant.TENANT_ID);
 
-        String sql = "SELECT t.id,data_id,group_id,content,md5"
-                + " FROM ( SELECT id FROM config_info ORDER BY id LIMIT ?,?  ) "
-                + " g, config_info t  WHERE g.id = t.id ";
-        return new MapperResult(sql, Collections.emptyList());
+        String innerSql = getLimitPageSqlWithMark(" SELECT id FROM config_info ORDER BY id ");
+        String sql = new StringBuilder()
+                .append(" SELECT t.id,data_id,group_id,content,md5")
+                .append(" FROM ( ").append(innerSql).append("  ) ")
+                .append(" g, config_info t  WHERE g.id = t.id ")
+                .toString();
+
+        return new MapperResult(sql, CollectionUtils.list(appName, tenantId));
     }
 
     @Override
     public MapperResult findAllConfigInfoFragment(MapperContext context) {
-        String sql = "SELECT id,data_id,group_id,tenant_id,app_name,content,md5,gmt_modified,type,encrypted_data_key "
-                + "FROM config_info WHERE id > ? ORDER BY id ASC LIMIT " + context.getStartRow() + ","
-                + context.getPageSize();
+        String sql = getLimitPageSqlWithOffset("SELECT id,data_id,group_id,tenant_id,app_name,content,md5,gmt_modified,type,encrypted_data_key "
+                + "FROM config_info WHERE id > ? ORDER BY id ASC ", context.getStartRow(), context.getPageSize());
+
         return new MapperResult(sql, CollectionUtils.list(context.getWhereParameter(FieldConstant.ID)));
     }
 
@@ -138,6 +135,7 @@ public class BaseConfigInfoMapper extends ConfigInfoMapperByMySql {
         final String tenantTmp = StringUtils.isBlank(tenant) ? StringUtils.EMPTY : tenant;
         final Timestamp startTime = (Timestamp) context.getWhereParameter(FieldConstant.START_TIME);
         final Timestamp endTime = (Timestamp) context.getWhereParameter(FieldConstant.END_TIME);
+        final long lastMaxId = (long) context.getWhereParameter(FieldConstant.LAST_MAX_ID);
 
         List<Object> paramList = new ArrayList<>();
 
@@ -169,16 +167,24 @@ public class BaseConfigInfoMapper extends ConfigInfoMapperByMySql {
             where += " AND gmt_modified <=? ";
             paramList.add(endTime);
         }
-        return new MapperResult(
-                sqlFetchRows + where + " AND id > " + context.getWhereParameter(FieldConstant.LAST_MAX_ID)
-                        + " ORDER BY id ASC" + " LIMIT " + 0 + "," + context.getPageSize(), paramList);
+
+        String srcSql = sqlFetchRows + where + " AND id > " + context.getWhereParameter(FieldConstant.LAST_MAX_ID)
+                + " ORDER BY id ASC";
+        String sql = getLimitPageSqlWithOffset(srcSql,0, context.getPageSize());
+
+        return new MapperResult(sql, paramList);
     }
 
     @Override
     public MapperResult listGroupKeyMd5ByPageFetchRows(MapperContext context) {
-        String sql = "SELECT t.id,data_id,group_id,tenant_id,app_name,md5,type,gmt_modified,encrypted_data_key FROM "
-                + "( SELECT id FROM config_info ORDER BY id LIMIT " + context.getStartRow() + ","
-                + context.getPageSize() + " ) g, config_info t WHERE g.id = t.id";
+        String innerSql = getLimitPageSqlWithOffset(" SELECT id FROM config_info ORDER BY id ", context.getStartRow(), context.getPageSize());
+        String sql = new StringBuilder()
+                .append(" SELECT t.id,data_id,group_id,tenant_id,app_name,md5,type,gmt_modified,encrypted_data_key FROM ")
+                .append("( ")
+                .append(innerSql)
+                .append(" ) g, config_info t WHERE g.id = t.id")
+                .toString();
+
         return new MapperResult(sql, Collections.emptyList());
     }
 
@@ -205,8 +211,10 @@ public class BaseConfigInfoMapper extends ConfigInfoMapperByMySql {
             where += " AND content LIKE ? ";
             paramList.add(content);
         }
-        return new MapperResult(sqlFetchRows + where + " LIMIT " + context.getStartRow() + "," + context.getPageSize(),
-                paramList);
+
+        String sql = getLimitPageSqlWithOffset(sqlFetchRows + where, context.getStartRow(), context.getPageSize());
+
+        return new MapperResult(sql, paramList);
     }
 
 
@@ -241,17 +249,15 @@ public class BaseConfigInfoMapper extends ConfigInfoMapperByMySql {
             paramList.add(content);
         }
 
-        sql = getLimitPageSqlWithOffset(sql,context.getStartRow(), context.getPageSize());
+        sql =  getLimitPageSqlWithOffset(sql + where, context.getStartRow(), context.getPageSize());
 
-
-        return new MapperResult(sql + where + " LIMIT " + context.getStartRow() + "," + context.getPageSize(),
-                paramList);
+        return new MapperResult(sql, paramList);
     }
 
     @Override
     public MapperResult findConfigInfoBaseByGroupFetchRows(MapperContext context) {
         String sql = "SELECT id,data_id,group_id,content FROM config_info WHERE group_id=? AND tenant_id=? ";
-        sql = getLimitPageSqlWithOffset(sql,context.getStartRow(), context.getPageSize());
+        sql = getLimitPageSqlWithOffset(sql, context.getStartRow(), context.getPageSize());
 
         return new MapperResult(sql, CollectionUtils.list(context.getWhereParameter(FieldConstant.GROUP_ID),
                 context.getWhereParameter(FieldConstant.TENANT_ID)));
@@ -297,9 +303,15 @@ public class BaseConfigInfoMapper extends ConfigInfoMapperByMySql {
 
     @Override
     public MapperResult findAllConfigInfoFetchRows(MapperContext context) {
-        String sql = "SELECT t.id,data_id,group_id,tenant_id,app_name,content,md5 "
-                + " FROM (  SELECT id FROM config_info WHERE tenant_id LIKE ? ORDER BY id LIMIT ?,? )"
-                + " g, config_info t  WHERE g.id = t.id ";
+        String innerSql = getLimitPageSqlWithMark("SELECT id FROM config_info WHERE tenant_id LIKE ? ORDER BY id ");
+        String sql = new StringBuilder()
+                .append(" SELECT t.id,data_id,group_id,tenant_id,app_name,content,md5 ")
+                .append(" FROM ( ")
+                .append(innerSql)
+                .append(" )")
+                .append(" g, config_info t  WHERE g.id = t.id ")
+                .toString();
+
         return new MapperResult(sql,
                 CollectionUtils.list(context.getWhereParameter(FieldConstant.TENANT_ID), context.getStartRow(),
                         context.getPageSize()));
