@@ -48,14 +48,48 @@ IDEA导入时导入nacos-datasource-plugin-ext这个目录作为根目录即可�
 spring:
   datasource:
     platform: postgresql
+
+nacos:
+  core:
+    auth:
+      caching:
+        enabled: false
+      default:
+        token:
+          expire:
+            seconds: 18000
+          secret:
+            key: SecretKey012345678901234567890123456789012345678901234567890123456789
+      enabled: false
+      system:
+        type: nacos
+  istio:
+    mcp:
+      server:
+        enabled: false
+  naming:
+    empty-service:
+      auto-clean: true
+      clean:
+        initial-delay-ms: 50000
+        period-time-ms: 30000
+  security:
+    ignore:
+      urls: /,/error,/**/*.css,/**/*.js,/**/*.html,/**/*.map,/**/*.svg,/**/*.png,/**/*.ico,/console-ui/public/**,/v1/auth/**,/v1/console/health/**,/actuator/**,/v1/console/server/**
+
+  standalone: true
+  
 db:
+  num: 1
   url:
-    0: jdbc:postgresql://127.0.0.1:5432/nacos?tcpKeepAlive=true&reWriteBatchedInserts=true&ApplicationName=nacos_java
-  user: nacos
-  password: nacos
+    0: jdbc:postgresql://127.0.0.1:24359/数据库名称?currentSchema=Schema&tcpKeepAlive=true&reWriteBatchedInserts=true&ApplicationName=nacos_java
+  user: 用户名
+  password: 密码
   pool:
     config:
       driverClassName: org.postgresql.Driver
+
+
 ```
 
 ### 2.3 导入Postgresql的数据库脚本文件

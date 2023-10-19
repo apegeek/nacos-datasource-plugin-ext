@@ -5,11 +5,11 @@
   <parent>
     <groupId>com.alibaba.nacos</groupId>
     <artifactId>nacos-datasource-plugin-ext</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
   </parent>
   <groupId>com.alibaba.nacos</groupId>
   <artifactId>nacos-postgresql-datasource-plugin-ext</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <properties>
     <jdbc.postgresql.version>42.2.19</jdbc.postgresql.version>
     <maven.compiler.source>8</maven.compiler.source>
@@ -25,7 +25,7 @@
     <dependency>
       <groupId>com.alibaba.nacos</groupId>
       <artifactId>nacos-datasource-plugin-ext-base</artifactId>
-      <version>1.0.0</version>
+      <version>1.0.1</version>
       <scope>compile</scope>
     </dependency>
     <dependency>

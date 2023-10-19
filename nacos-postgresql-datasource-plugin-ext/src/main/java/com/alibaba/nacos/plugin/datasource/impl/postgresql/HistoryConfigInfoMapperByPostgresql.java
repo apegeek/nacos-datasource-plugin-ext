@@ -16,26 +16,15 @@
 
 package com.alibaba.nacos.plugin.datasource.impl.postgresql;
 
-import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.alibaba.nacos.plugin.datasource.constants.DatabaseTypeConstant;
-import com.alibaba.nacos.plugin.datasource.constants.FieldConstant;
-import com.alibaba.nacos.plugin.datasource.impl.mysql.HistoryConfigInfoMapperByMySql;
-import com.alibaba.nacos.plugin.datasource.model.MapperContext;
-import com.alibaba.nacos.plugin.datasource.model.MapperResult;
+import com.alibaba.nacos.plugin.datasource.impl.base.BaseHistoryConfigInfoMapper;
 
 /**
- * The postgresql implementation of HistoryConfigInfoMapper.
+ * The postgresql implementation of BaseHistoryConfigInfoMapper.
  *
  * @author Long Yu
  **/
-public class HistoryConfigInfoMapperByPostgresql extends HistoryConfigInfoMapperByMySql {
-
-    @Override
-    public MapperResult removeConfigHistory(MapperContext context) {
-        String sql = "DELETE FROM his_config_info WHERE gmt_modified < ? LIMIT ?";
-        return new MapperResult(sql, CollectionUtils.list(context.getWhereParameter(FieldConstant.START_TIME),
-                context.getWhereParameter(FieldConstant.LIMIT_SIZE)));
-    }
+public class HistoryConfigInfoMapperByPostgresql extends BaseHistoryConfigInfoMapper {
 
     @Override
     public String getDataSource() {
